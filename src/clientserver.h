@@ -23,11 +23,11 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/serialize.h"
 
 /*
-	changes by PROTOCOL_VERSION:
+	changes by MT_PROTOCOL_VERSION:
 
-	PROTOCOL_VERSION 3:
+	MT_PROTOCOL_VERSION 3:
 		Base for writing changes here
-	PROTOCOL_VERSION 4:
+	MT_PROTOCOL_VERSION 4:
 		Add TOCLIENT_MEDIA
 		Add TOCLIENT_TOOLDEF
 		Add TOCLIENT_NODEDEF
@@ -35,41 +35,41 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 		Add TOSERVER_INTERACT
 		Obsolete TOSERVER_CLICK_ACTIVEOBJECT
 		Obsolete TOSERVER_GROUND_ACTION
-	PROTOCOL_VERSION 5:
+	MT_PROTOCOL_VERSION 5:
 		Make players to be handled mostly as ActiveObjects
-	PROTOCOL_VERSION 6:
+	MT_PROTOCOL_VERSION 6:
 		Only non-cached textures are sent
-	PROTOCOL_VERSION 7:
+	MT_PROTOCOL_VERSION 7:
 		Add TOCLIENT_ITEMDEF
 		Obsolete TOCLIENT_TOOLDEF
 		Obsolete TOCLIENT_CRAFTITEMDEF
 		Compress the contents of TOCLIENT_ITEMDEF and TOCLIENT_NODEDEF
-	PROTOCOL_VERSION 8:
+	MT_PROTOCOL_VERSION 8:
 		Digging based on item groups
 		Many things
-	PROTOCOL_VERSION 9:
+	MT_PROTOCOL_VERSION 9:
 		ContentFeatures and NodeDefManager use a different serialization
 		    format; better for future version cross-compatibility
 		Many things
-	PROTOCOL_VERSION 10:
+	MT_PROTOCOL_VERSION 10:
 		TOCLIENT_PRIVILEGES
 		Version raised to force 'fly' and 'fast' privileges into effect.
 		Node metadata change (came in later; somewhat incompatible)
-	PROTOCOL_VERSION 11:
+	MT_PROTOCOL_VERSION 11:
 		TileDef in ContentFeatures
 		Nodebox drawtype
 		(some dev snapshot)
 		TOCLIENT_INVENTORY_FORMSPEC
 		(0.4.0, 0.4.1)
-	PROTOCOL_VERSION 12:
+	MT_PROTOCOL_VERSION 12:
 		TOSERVER_INVENTORY_FIELDS
 		16-bit node ids
 		TOCLIENT_DETACHED_INVENTORY
-	PROTOCOL_VERSION 13:
+	MT_PROTOCOL_VERSION 13:
 		InventoryList field "Width" (deserialization fails with old versions)
 */
 
-#define PROTOCOL_VERSION 13
+#define MT_PROTOCOL_VERSION 13
 
 #define PROTOCOL_ID 0x4f457403
 

@@ -141,6 +141,7 @@ endif()
 
 find_package(Jthread REQUIRED)
 find_package(Sqlite3 REQUIRED)
+find_package(MySQL REQUIRED)
 
 # Do not use system-wide installation of Lua, because it'll likely be a
 # different version and/or has different build options.
@@ -197,6 +198,9 @@ set(common_SRCS
 	mapblock.cpp
 	mapsector.cpp
 	map.cpp
+	database.cpp
+	database-mysql.cpp
+	database-dummy.cpp
 	player.cpp
 	test.cpp
 	sha1.cpp
@@ -280,6 +284,7 @@ include_directories(
 	${SOUND_INCLUDE_DIRS}
 	${JTHREAD_INCLUDE_DIR}
 	${SQLITE3_INCLUDE_DIR}
+	${MYSQL_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
 )
 
@@ -300,6 +305,7 @@ if(BUILD_CLIENT)
 		${SOUND_LIBRARIES}
 		${JTHREAD_LIBRARY}
 		${SQLITE3_LIBRARY}
+		${MYSQL_LIBRARIES}
 		${LUA_LIBRARY}
 		${PLATFORM_LIBS}
 		${CLIENT_PLATFORM_LIBS}
@@ -313,6 +319,7 @@ if(BUILD_SERVER)
 		${ZLIB_LIBRARIES}
 		${JTHREAD_LIBRARY}
 		${SQLITE3_LIBRARY}
+		${MYSQL_LIBRARIES}
 		${LUA_LIBRARY}
 		${PLATFORM_LIBS}
 	)

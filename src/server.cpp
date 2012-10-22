@@ -2059,7 +2059,7 @@ void Server::ProcessData(u8 *data, u32 datasize, u16 peer_id)
 		
 		if(g_settings->getBool("strict_protocol_version_checking"))
 		{
-			if(net_proto_version != PROTOCOL_VERSION)
+			if(net_proto_version != MT_PROTOCOL_VERSION)
 			{
 				actionstream<<"Server: A mismatched client tried to connect"
 						<<" from "<<addr_s<<std::endl;
@@ -2067,9 +2067,9 @@ void Server::ProcessData(u8 *data, u32 datasize, u16 peer_id)
 						L"Your client's version is not supported.\n"
 						L"Server version is ")
 						+ narrow_to_wide(VERSION_STRING) + L",\n"
-						+ L"server's PROTOCOL_VERSION is "
-						+ narrow_to_wide(itos(PROTOCOL_VERSION))
-						+ L", client's PROTOCOL_VERSION is "
+						+ L"server's MT_PROTOCOL_VERSION is "
+						+ narrow_to_wide(itos(MT_PROTOCOL_VERSION))
+						+ L", client's MT_PROTOCOL_VERSION is "
 						+ narrow_to_wide(itos(net_proto_version))
 				);
 				return;
@@ -2310,7 +2310,7 @@ void Server::ProcessData(u8 *data, u32 datasize, u16 peer_id)
 		}
 		
 		// Warnings about protocol version can be issued here
-		if(getClient(peer_id)->net_proto_version < PROTOCOL_VERSION)
+		if(getClient(peer_id)->net_proto_version < MT_PROTOCOL_VERSION)
 		{
 			SendChatMessage(peer_id, L"# Server: WARNING: YOUR CLIENT IS OLD AND MAY WORK PROPERLY WITH THIS SERVER!");
 		}
