@@ -40,14 +40,19 @@ function bucket.register_liquid(source, flowing, itemname, inventory_image)
 				if pointed_thing.type ~= "node" then
 					return
 				end
-				-- Check if pointing to a liquid
+				-- Check if pointing to a buildable node
 				n = minetest.env:get_node(pointed_thing.under)
-				if bucket.liquids[n.name] == nil then
-					-- Not a liquid
-					minetest.env:add_node(pointed_thing.above, {name=source})
-				elseif n.name ~= source then
-					-- It's a liquid
+				if minetest.registered_nodes[n.name].buildable_to then
+					-- buildable
 					minetest.env:add_node(pointed_thing.under, {name=source})
+				else
+					n = minetest.env:get_node(pointed_thing.above)
+					-- not buildable
+					-- check if its allowed to replace the node
+					if not minetest.registered_nodes[n.name].buildable_to then
+						return
+					end
+					minetest.env:add_node(pointed_thing.above, {name=source})
 				end
 				return {name="bucket:bucket_empty"}
 			end
