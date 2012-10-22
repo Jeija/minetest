@@ -33,6 +33,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/string.h"
 #include "util/numeric.h"
 
+#include "intlGUIEditBox.h"
+
 #include "gettext.h"
 
 void drawItemStack(video::IVideoDriver *driver,
@@ -348,7 +350,8 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
 			if (flabel == "") 
 			{
 				spec.send = true;
-				gui::IGUIElement *e = Environment->addEditBox(spec.fdefault.c_str(), rect, true, this, spec.fid);
+				gui::IGUIElement *e = (gui::IGUIElement *) new gui::intlGUIEditBox(spec.fdefault.c_str(), true, Environment, this, spec.fid, rect);
+				e->drop();
 				Environment->setFocus(e);
 
 				irr::SEvent evt;
@@ -365,7 +368,8 @@ void GUIFormSpecMenu::regenerateGui(v2u32 screensize)
 			else
 			{
 				spec.send = true;
-				gui::IGUIElement *e = Environment->addEditBox(spec.fdefault.c_str(), rect, true, this, spec.fid);
+				gui::IGUIElement *e = (gui::IGUIElement *) new gui::intlGUIEditBox(spec.fdefault.c_str(), true, Environment, this, spec.fid, rect);
+				e->drop();
 				Environment->setFocus(e);
 				rect.UpperLeftCorner.Y -= 15;
 				rect.LowerRightCorner.Y -= 15;

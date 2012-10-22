@@ -41,6 +41,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/string.h"
 #include "subgame.h"
 
+#include "intlGUIEditBox.h"
+
 struct CreateWorldDestMainMenu : public CreateWorldDest
 {
 	CreateWorldDestMainMenu(GUIMainMenu *menu):
@@ -366,8 +368,9 @@ void GUIMainMenu::regenerateGui(v2u32 screensize)
 		{
 			core::rect<s32> rect(0, 0, 230, 30);
 			rect += m_topleft_client + v2s32(160+30, 50);
-			gui::IGUIElement *e = 
-			Environment->addEditBox(m_data->name.c_str(), rect, true, this, GUI_ID_NAME_INPUT);
+			gui::IGUIElement *e = (gui::IGUIElement *) new gui::intlGUIEditBox(m_data->name.c_str(), true, Environment, this, GUI_ID_NAME_INPUT, rect);
+			e->drop();
+
 			if(m_data->name == L"")
 				Environment->setFocus(e);
 		}
@@ -393,17 +396,16 @@ void GUIMainMenu::regenerateGui(v2u32 screensize)
 		{
 			core::rect<s32> rect(0, 0, 230, 30);
 			rect += m_topleft_client + v2s32(160+30, 100);
-			gui::IGUIElement *e = 
-			Environment->addEditBox(m_data->address.c_str(), rect, true,
-					this, GUI_ID_ADDRESS_INPUT);
+			gui::IGUIElement *e = (gui::IGUIElement *) new gui::intlGUIEditBox(m_data->address.c_str(), true, Environment, this, GUI_ID_ADDRESS_INPUT, rect);
+			e->drop();
 			if(m_data->name != L"" && m_data->address == L"")
 				Environment->setFocus(e);
 		}
 		{
 			core::rect<s32> rect(0, 0, 120, 30);
 			rect += m_topleft_client + v2s32(m_size_client.X-60-100, 100);
-			Environment->addEditBox(m_data->port.c_str(), rect, true,
-					this, GUI_ID_PORT_INPUT);
+			gui::IGUIElement *e = (gui::IGUIElement *) new gui::intlGUIEditBox(m_data->port.c_str(), true, Environment, this, GUI_ID_PORT_INPUT, rect);
+			e->drop();
 		}
 		changeCtype("");
 		// Start game button
@@ -439,8 +441,8 @@ void GUIMainMenu::regenerateGui(v2u32 screensize)
 		{
 			core::rect<s32> rect(0, 0, 230, 30);
 			rect += m_topleft_client + v2s32(160+30, 35);
-			gui::IGUIElement *e = 
-			Environment->addEditBox(m_data->name.c_str(), rect, true, this, GUI_ID_NAME_INPUT);
+			gui::IGUIElement *e = (gui::IGUIElement *) new gui::intlGUIEditBox(m_data->name.c_str(), true, Environment, this, GUI_ID_NAME_INPUT, rect);
+			e->drop();
 			if(m_data->name == L"")
 				Environment->setFocus(e);
 		}
@@ -466,17 +468,16 @@ void GUIMainMenu::regenerateGui(v2u32 screensize)
 		{
 			core::rect<s32> rect(0, 0, 230, 30);
 			rect += m_topleft_client + v2s32(160+30, 75);
-			gui::IGUIElement *e = 
-			Environment->addEditBox(m_data->address.c_str(), rect, true,
-					this, GUI_ID_ADDRESS_INPUT);
+			gui::IGUIElement *e = (gui::IGUIElement *) new gui::intlGUIEditBox(m_data->address.c_str(), true, Environment, this, GUI_ID_ADDRESS_INPUT, rect);
+			e->drop();
 			if(m_data->name != L"" && m_data->address == L"")
 				Environment->setFocus(e);
 		}
 		{
 			core::rect<s32> rect(0, 0, 120, 30);
 			rect += m_topleft_client + v2s32(m_size_client.X-60-100, 75);
-			Environment->addEditBox(m_data->port.c_str(), rect, true,
-					this, GUI_ID_PORT_INPUT);
+			gui::IGUIElement *e = (gui::IGUIElement *) new gui::intlGUIEditBox(m_data->port.c_str(), true, Environment, this, GUI_ID_PORT_INPUT, rect);
+			e->drop();
 		}
 		changeCtype("");
 		{

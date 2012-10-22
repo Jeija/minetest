@@ -102,6 +102,12 @@ if(WIN32)
 			CACHE FILEPATH "Path to zlibwapi.dll (for installation)")
 	set(IRRLICHT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/../../irrlicht-1.7.2"
 			CACHE PATH "irrlicht dir")
+	set(FREETYPE_INCLUDE_DIR_ft2build "${PROJECT_SOURCE_DIR}/../../freetype2/include/"
+			CACHE PATH "freetype include dir")
+	set(FREETYPE_INCLUDE_DIR_freetype2 "${PROJECT_SOURCE_DIR}/../../freetype2/include/freetype"
+			CACHE PATH "freetype include dir")
+	set(FREETYPE_LIBRARY "${PROJECT_SOURCE_DIR}/../../freetype2/objs/win32/vc2005/freetype247.lib"
+			CACHE FILEPATH "Path to freetype247.lib")
 	set(MINGWM10_DLL ""
 			CACHE FILEPATH "Path to mingwm10.dll (for installation)")
 	if(ENABLE_SOUND)
@@ -141,6 +147,10 @@ endif()
 
 find_package(Jthread REQUIRED)
 find_package(Sqlite3 REQUIRED)
+find_package(Freetype REQUIRED)
+
+set(CGUITTFONT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cguittfont")
+set(CGUITTFONT_LIBRARY cguittfont)
 
 # Do not use system-wide installation of Lua, because it'll likely be a
 # different version and/or has different build options.
@@ -238,6 +248,7 @@ set(minetest_SRCS
 	content_cso.cpp
 	content_mapblock.cpp
 	content_cao.cpp
+	intlGUIEditBox.cpp
 	mesh.cpp
 	mapblock_mesh.cpp
 	farmesh.cpp
@@ -276,10 +287,12 @@ include_directories(
 	${ZLIB_INCLUDE_DIR}
 	${CMAKE_BUILD_TYPE}
 	${PNG_INCLUDE_DIR}
+	${FREETYPE_INCLUDE_DIRS}
 	${GETTEXT_INCLUDE_DIR}
 	${SOUND_INCLUDE_DIRS}
 	${JTHREAD_INCLUDE_DIR}
 	${SQLITE3_INCLUDE_DIR}
+	${CGUITTFONT_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
 )
 
@@ -296,10 +309,12 @@ if(BUILD_CLIENT)
 		${BZIP2_LIBRARIES}
 		${PNG_LIBRARIES}
 		${X11_LIBRARIES}
+		${FREETYPE_LIBRARIES}
 		${GETTEXT_LIBRARY}
 		${SOUND_LIBRARIES}
 		${JTHREAD_LIBRARY}
 		${SQLITE3_LIBRARY}
+		${CGUITTFONT_LIBRARY}
 		${LUA_LIBRARY}
 		${PLATFORM_LIBS}
 		${CLIENT_PLATFORM_LIBS}
@@ -480,6 +495,10 @@ if (SQLITE3_FOUND)
 else (SQLITE3_FOUND)
 	add_subdirectory(sqlite)
 endif (SQLITE3_FOUND)
+
+if (BUILD_CLIENT)
+	add_subdirectory(cguittfont)
+endif (BUILD_CLIENT)
 
 if (LUA_FOUND)
 else (LUA_FOUND)

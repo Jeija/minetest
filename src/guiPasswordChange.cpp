@@ -26,6 +26,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <IGUIStaticText.h>
 #include <IGUIFont.h>
 
+#include "intlGUIEditBox.h"
+
 #include "gettext.h"
 
 const int ID_oldPassword = 256;
