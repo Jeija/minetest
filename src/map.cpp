@@ -2043,6 +2043,8 @@ ServerMap::ServerMap(std::string savedir, IGameDef *gamedef):
 			savedir);
 	} else if (g_settings->exists("db_dummy"))
 		dbase = new Database_Dummy(this);
+	else if (g_settings->exists("db_leveldb"))
+		dbase = new Database_LevelDB(this,savedir);
 	else
 		dbase = new Database_SQLite3(this,savedir);
 

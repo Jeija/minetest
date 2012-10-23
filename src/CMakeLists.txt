@@ -143,6 +143,9 @@ find_package(Jthread REQUIRED)
 find_package(Sqlite3 REQUIRED)
 find_package(MySQL REQUIRED)
 
+SET(LEVELDB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/leveldb/include)
+SET(LEVELDB_LIBRARY leveldb)
+
 # Do not use system-wide installation of Lua, because it'll likely be a
 # different version and/or has different build options.
 set(LUA_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/lua/src")
@@ -201,6 +204,7 @@ set(common_SRCS
 	database.cpp
 	database-mysql.cpp
 	database-dummy.cpp
+	database-leveldb.cpp
 	player.cpp
 	test.cpp
 	sha1.cpp
@@ -285,6 +289,7 @@ include_directories(
 	${JTHREAD_INCLUDE_DIR}
 	${SQLITE3_INCLUDE_DIR}
 	${MYSQL_INCLUDE_DIR}
+	${LEVELDB_INCLUDE_DIR}
 	${LUA_INCLUDE_DIR}
 )
 
@@ -306,6 +311,7 @@ if(BUILD_CLIENT)
 		${JTHREAD_LIBRARY}
 		${SQLITE3_LIBRARY}
 		${MYSQL_LIBRARIES}
+		${LEVELDB_LIBRARY}
 		${LUA_LIBRARY}
 		${PLATFORM_LIBS}
 		${CLIENT_PLATFORM_LIBS}
@@ -320,6 +326,7 @@ if(BUILD_SERVER)
 		${JTHREAD_LIBRARY}
 		${SQLITE3_LIBRARY}
 		${MYSQL_LIBRARIES}
+		${LEVELDB_LIBRARY}
 		${LUA_LIBRARY}
 		${PLATFORM_LIBS}
 	)
@@ -492,5 +499,7 @@ if (LUA_FOUND)
 else (LUA_FOUND)
 	add_subdirectory(lua)
 endif (LUA_FOUND)
+
+add_subdirectory(leveldb)
 
 #end

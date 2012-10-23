@@ -15,6 +15,8 @@ extern "C" {
 	#include "mysql.h"
 }
 
+#include "leveldb/db.h"
+
 class Database;
 class Database_SQLite3;
 class ServerMap;
@@ -75,6 +77,22 @@ public:
 private:
 	ServerMap *srvmap;
 	std::map<unsigned long long, std::string> m_database;
+};
+
+class Database_LevelDB : public Database
+{
+public:
+	Database_LevelDB(ServerMap *map, std::string savedir);
+	virtual void beginSave();
+	virtual void endSave();
+        virtual void saveBlock(MapBlock *block);
+        virtual MapBlock* loadBlock(v3s16 blockpos);
+        virtual void listAllLoadableBlocks(core::list<v3s16> &dst);
+        virtual int Initialized(void);
+	~Database_LevelDB();
+private:
+	ServerMap *srvmap;
+	leveldb::DB* m_database;
 };
 
 class Database_MySQL : public Database
