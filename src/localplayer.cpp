@@ -80,13 +80,14 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 		// If in water, the threshold of coming out is at higher y
 		if(in_water)
 		{
-			v3s16 pp = floatToInt(position + v3f(0,BS*0.1,0), BS);
+			v3s16 pp = floatToInt(position + v3f(0,BS*0.2,0), BS);
 			in_water = nodemgr->get(map.getNode(pp).getContent()).isLiquid();
+			liquid_viscosity = itemgroup_get(nodemgr->get(map.getNode(pp)).groups, "liquid");
 		}
 		// If not in water, the threshold of going in is at lower y
 		else
 		{
-			v3s16 pp = floatToInt(position + v3f(0,BS*0.5,0), BS);
+			v3s16 pp = floatToInt(position + v3f(0,BS*0.6,0), BS);
 			in_water = nodemgr->get(map.getNode(pp).getContent()).isLiquid();
 		}
 	}
@@ -95,17 +96,6 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 		in_water = false;
 	}
 
-	/*
-		Check if player is in water (the stable value)
-	*/
-	try{
-		v3s16 pp = floatToInt(position + v3f(0,0,0), BS);
-		in_water_stable = nodemgr->get(map.getNode(pp).getContent()).isLiquid();
-	}
-	catch(InvalidPositionException &e)
-	{
-		in_water_stable = false;
-	}
 
 	/*
 	        Check if player is climbing
@@ -343,9 +333,6 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d)
 
 void LocalPlayer::applyControl(float dtime)
 {
-	// Clear stuff
-	swimming_up = false;
-
 	// Random constants
 	f32 walk_acceleration = 4.0 * BS;
 	f32 walkspeed_max = 4.0 * BS;
@@ -497,13 +484,13 @@ void LocalPlayer::applyControl(float dtime)
 			}
 		}
 		// Use the oscillating value for getting out of water
-		// (so that the player doesn't fly on the surface)
 		else if(in_water)
 		{
 			v3f speed = getSpeed();
-			speed.Y = 1.5*BS;
-			setSpeed(speed);
-			swimming_up = true;
+			if (liquid_viscosity >= 0) {
+				speed.Y += sqrt(liquid_viscosity * BS);
+				setSpeed(speed);
+			}
 		}
 		else if(is_climbing)
 		{

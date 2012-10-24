@@ -2011,20 +2011,16 @@ void ClientEnvironment::step(float dtime)
 			{
 				// Gravity
 				v3f speed = lplayer->getSpeed();
-				if(lplayer->swimming_up == false)
-					speed.Y -= 9.81 * BS * dtime_part * 2;
+				speed.Y -= 9.81 * BS * dtime_part * 2;
 
-				// Water resistance
-				if(lplayer->in_water_stable || lplayer->in_water)
+				// Water resistance (higher on sides due to due to player anatomy)
+				if(lplayer->in_water)
 				{
-					f32 max_down = 2.0*BS;
-					if(speed.Y < -max_down) speed.Y = -max_down;
-
-					f32 max = 2.5*BS;
-					if(speed.getLength() > max)
-					{
-						speed = speed / speed.getLength() * max;
-					}
+					v3f viscosity_force;
+					viscosity_force.Y = speed.Y * lplayer->liquid_viscosity * 0.01;
+					viscosity_force.X = speed.X * lplayer->liquid_viscosity * 0.015;
+					viscosity_force.Z = speed.Z * lplayer->liquid_viscosity * 0.015;
+					speed = speed - viscosity_force;
 				}
 
 				lplayer->setSpeed(speed);

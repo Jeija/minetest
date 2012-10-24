@@ -28,7 +28,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 Player::Player(IGameDef *gamedef):
 	touching_ground(false),
 	in_water(false),
-	in_water_stable(false),
+	liquid_viscosity(0),
 	is_climbing(false),
 	swimming_up(false),
 	camera_barely_in_ceiling(false),

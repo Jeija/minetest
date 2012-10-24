@@ -205,10 +205,6 @@ struct ContentFeatures
 	std::string liquid_alternative_flowing;
 	// If the content is liquid, this is the source version of the liquid.
 	std::string liquid_alternative_source;
-	// Viscosity for fluid flow, ranging from 1 to 7, with
-	// 1 giving almost instantaneous propagation and 7 being
-	// the slowest possible
-	u8 liquid_viscosity;
 	// Amount of light the node emits
 	u8 light_source;
 	u32 damage_per_second;

@@ -4,8 +4,8 @@
 -- The API documentation in here was moved into doc/lua_api.txt
 
 WATER_ALPHA = 160
-WATER_VISC = 1
-LAVA_VISC = 7
+WATER_VISC = 7
+LAVA_VISC = 30
 LIGHT_MAX = 14
 
 -- Definitions made by this mod that other mods can use too
@@ -1002,9 +1002,8 @@ minetest.register_node("default:water_flowing", {
 	liquidtype = "flowing",
 	liquid_alternative_flowing = "default:water_flowing",
 	liquid_alternative_source = "default:water_source",
-	liquid_viscosity = WATER_VISC,
 	post_effect_color = {a=64, r=100, g=100, b=200},
-	groups = {water=3, liquid=3},
+	groups = {water=3, liquid=WATER_VISC},
 })
 
 minetest.register_node("default:water_source", {
@@ -1025,9 +1024,8 @@ minetest.register_node("default:water_source", {
 	liquidtype = "source",
 	liquid_alternative_flowing = "default:water_flowing",
 	liquid_alternative_source = "default:water_source",
-	liquid_viscosity = WATER_VISC,
 	post_effect_color = {a=64, r=100, g=100, b=200},
-	groups = {water=3, liquid=3},
+	groups = {water=3, liquid=WATER_VISC},
 })
 
 minetest.register_node("default:lava_flowing", {
@@ -1056,10 +1054,9 @@ minetest.register_node("default:lava_flowing", {
 	liquidtype = "flowing",
 	liquid_alternative_flowing = "default:lava_flowing",
 	liquid_alternative_source = "default:lava_source",
-	liquid_viscosity = LAVA_VISC,
 	damage_per_second = 4*2,
 	post_effect_color = {a=192, r=255, g=64, b=0},
-	groups = {lava=3, liquid=2, hot=3},
+	groups = {lava=3, liquid=LAVA_VISC, hot=3},
 })
 
 minetest.register_node("default:lava_source", {
@@ -1083,10 +1080,9 @@ minetest.register_node("default:lava_source", {
 	liquidtype = "source",
 	liquid_alternative_flowing = "default:lava_flowing",
 	liquid_alternative_source = "default:lava_source",
-	liquid_viscosity = LAVA_VISC,
 	damage_per_second = 4*2,
 	post_effect_color = {a=192, r=255, g=64, b=0},
-	groups = {lava=3, liquid=2, hot=3},
+	groups = {lava=3, liquid=LAVA_VISC, hot=3},
 })
 
 minetest.register_node("default:torch", {
@@ -1106,7 +1102,7 @@ minetest.register_node("default:torch", {
 		wall_bottom = {-0.1, -0.5, -0.1, 0.1, -0.5+0.6, 0.1},
 		wall_side = {-0.5, -0.3, -0.1, -0.5+0.3, 0.3, 0.1},
 	},
-	groups = {choppy=2,dig_immediate=3},
+	groups = {choppy=2,dig_immediate=3,solid=10},
 	legacy_wallmounted = true,
 	sounds = default.node_sound_defaults(),
 })

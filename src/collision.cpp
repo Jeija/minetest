@@ -235,23 +235,24 @@ collisionMoveResult collisionMoveSimple(Map *map, IGameDef *gamedef,
 			// Object collides into walkable nodes
 			MapNode n = map->getNode(p);
 			const ContentFeatures &f = gamedef->getNodeDefManager()->get(n);
-			if(f.walkable == false)
-				continue;
-			int n_bouncy_value = itemgroup_get(f.groups, "bouncy");
-
-			std::vector<aabb3f> nodeboxes = n.getNodeBoxes(gamedef->ndef());
-			for(std::vector<aabb3f>::iterator
-					i = nodeboxes.begin();
-					i != nodeboxes.end(); i++)
+			if(f.walkable == true || itemgroup_get(f.groups, "solid") != 0)
 			{
-				aabb3f box = *i;
-				box.MinEdge += v3f(x, y, z)*BS;
-				box.MaxEdge += v3f(x, y, z)*BS;
-				cboxes.push_back(box);
-				is_unloaded.push_back(false);
-				is_step_up.push_back(false);
-				bouncy_values.push_back(n_bouncy_value);
-				node_positions.push_back(p);
+				int n_bouncy_value = itemgroup_get(f.groups, "bouncy");
+
+				std::vector<aabb3f> nodeboxes = n.getNodeBoxes(gamedef->ndef());
+				for(std::vector<aabb3f>::iterator
+						i = nodeboxes.begin();
+						i != nodeboxes.end(); i++)
+				{
+					aabb3f box = *i;
+					box.MinEdge += v3f(x, y, z)*BS;
+					box.MaxEdge += v3f(x, y, z)*BS;
+					cboxes.push_back(box);
+					is_unloaded.push_back(false);
+					is_step_up.push_back(false);
+					bouncy_values.push_back(n_bouncy_value);
+					node_positions.push_back(p);
+				}
 			}
 		}
 		catch(InvalidPositionException &e)

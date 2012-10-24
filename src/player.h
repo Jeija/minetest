@@ -142,8 +142,7 @@ public:
 	bool touching_ground;
 	// This oscillates so that the player jumps a bit above the surface
 	bool in_water;
-	// This is more stable and defines the maximum speed of the player
-	bool in_water_stable;
+	int liquid_viscosity;
 	bool is_climbing;
 	bool swimming_up;
 	bool camera_barely_in_ceiling;

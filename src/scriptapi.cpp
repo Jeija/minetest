@@ -1233,11 +1233,6 @@ static ContentFeatures read_content_features(lua_State *L, int index)
 	// If the content is liquid, this is the source version of the liquid.
 	getstringfield(L, index, "liquid_alternative_source",
 			f.liquid_alternative_source);
-	// Viscosity for fluid flow, ranging from 1 to 7, with
-	// 1 giving almost instantaneous propagation and 7 being
-	// the slowest possible
-	f.liquid_viscosity = getintfield_default(L, index,
-			"liquid_viscosity", f.liquid_viscosity);
 	// Amount of light the node emits
 	f.light_source = getintfield_default(L, index,
 			"light_source", f.light_source);

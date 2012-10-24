@@ -1779,8 +1779,11 @@ void Map::transformLiquids(core::map<v3s16, MapBlock*> & modified_blocks)
 				}
 			}
 
-			u8 viscosity = nodemgr->get(liquid_kind).liquid_viscosity;
-			if (viscosity > 1 && max_node_level != liquid_level) {
+			int viscosity = itemgroup_get(nodemgr->get(liquid_kind).groups, "liquid") / 10;
+			if (viscosity < 1) viscosity = 1;
+			if (viscosity > 7) viscosity = 7;
+			/*TODO Replace hacky workaround for getting 0-infinite viscosity values to 1-7 values*/
+			if (viscosity >= 1 && max_node_level != liquid_level) {
 				// amount to gain, limited by viscosity
 				// must be at least 1 in absolute value
 				s8 level_inc = max_node_level - liquid_level;

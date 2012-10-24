@@ -456,6 +456,8 @@ Special groups
 - disable_jump: Player (and possibly other things) cannot jump from node
 - fall_damage_add_percent: damage speed = speed * (1 + value/100)
 - bouncy: value is bounce speed in percent
+- solid: If not 0, objects collide with node
+- liquid = viscosity : Defines the viscosity of a liquid. 0 is endless (behaves like vacuum/air), the higher the value the less viscous is the liquid
 
 Known damage and digging time defining groups
 ----------------------------------------------
@@ -1336,7 +1338,6 @@ Node definition (register_node)
     paramtype2 = "none", -- See "Nodes"
     is_ground_content = false, -- Currently not used for anything
     sunlight_propagates = false, -- If true, sunlight will go infinitely through this
-    walkable = true, -- If true, objects collide with node
     pointable = true, -- If true, can be pointed at
     diggable = true, -- If false, can never be dug
     climbable = false, -- If true, can be climbed on (ladder)
@@ -1345,7 +1346,6 @@ Node definition (register_node)
     liquidtype = "none", -- "none"/"source"/"flowing"
     liquid_alternative_flowing = "", -- Flowing version of source liquid
     liquid_alternative_source = "", -- Source version of flowing liquid
-    liquid_viscosity = 0, -- Higher viscosity = slower flow (max. 7)
     light_source = 0, -- Amount of light emitted by node
     damage_per_second = 0, -- If player is inside node, this damage is caused
     node_box = {type="regular"}, -- See "Node boxes"
