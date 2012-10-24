@@ -2020,6 +2020,9 @@ void ClientEnvironment::step(float dtime)
 					viscosity_force.Y = speed.Y * lplayer->liquid_viscosity * 0.01;
 					viscosity_force.X = speed.X * lplayer->liquid_viscosity * 0.015;
 					viscosity_force.Z = speed.Z * lplayer->liquid_viscosity * 0.015;
+					if (abs(viscosity_force.Y) > abs(speed.Y)) viscosity_force.Y = speed.Y;
+					if (abs(viscosity_force.X) > abs(speed.X)) viscosity_force.X = speed.X;
+					if (abs(viscosity_force.Z) > abs(speed.Z)) viscosity_force.Z = speed.Z;
 					speed = speed - viscosity_force;
 				}
 
