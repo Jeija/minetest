@@ -232,6 +232,7 @@ endif()
 set(minetest_SRCS
 	${common_SRCS}
 	${sound_SRCS}
+	clientapi.cpp
 	localplayer.cpp
 	sky.cpp
 	clientmap.cpp

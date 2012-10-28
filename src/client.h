@@ -34,6 +34,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "filecache.h"
 #include "localplayer.h"
 #include "util/pointedthing.h"
+#include "script.h"
+#include "clientapi.h"
 
 struct MeshMakeData;
 class MapBlockMesh;
@@ -397,6 +399,8 @@ private:
 	// Detached inventories
 	// key = name
 	std::map<std::string, Inventory*> m_detached_inventories;
+
+	lua_State *m_lua;
 };
 
 #endif // !CLIENT_HEADER

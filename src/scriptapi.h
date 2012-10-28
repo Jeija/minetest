@@ -29,6 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 class Server;
 class ServerEnvironment;
 class ServerActiveObject;
+class StackUnroller;
 typedef struct lua_State lua_State;
 struct ObjectProperties;
 struct ItemStack;

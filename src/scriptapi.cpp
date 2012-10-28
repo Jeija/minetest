@@ -49,86 +49,6 @@ extern "C" {
 #include "util/pointedthing.h"
 #include "rollback.h"
 
-static void stackDump(lua_State *L, std::ostream &o)
-{
-  int i;
-  int top = lua_gettop(L);
-  for (i = 1; i <= top; i++) {  /* repeat for each level */
-	int t = lua_type(L, i);
-	switch (t) {
-
-	  case LUA_TSTRING:  /* strings */
-	  	o<<"\""<<lua_tostring(L, i)<<"\"";
-		break;
-
-	  case LUA_TBOOLEAN:  /* booleans */
-		o<<(lua_toboolean(L, i) ? "true" : "false");
-		break;
-
-	  case LUA_TNUMBER:  /* numbers */ {
-	  	char buf[10];
-		snprintf(buf, 10, "%g", lua_tonumber(L, i));
-		o<<buf;
-		break; }
-
-	  default:  /* other values */
-		o<<lua_typename(L, t);
-		break;
-
-	}
-	o<<" ";
-  }
-  o<<std::endl;
-}
-
-static void realitycheck(lua_State *L)
-{
-	int top = lua_gettop(L);
-	if(top >= 30){
-		dstream<<"Stack is over 30:"<<std::endl;
-		stackDump(L, dstream);
-		script_error(L, "Stack is over 30 (reality check)");
-	}
-}
-
-class StackUnroller
-{
-private:
-	lua_State *m_lua;
-	int m_original_top;
-public:
-	StackUnroller(lua_State *L):
-		m_lua(L),
-		m_original_top(-1)
-	{
-		m_original_top = lua_gettop(m_lua); // store stack height
-	}
-	~StackUnroller()
-	{
-		lua_settop(m_lua, m_original_top); // restore stack height
-	}
-};
-
-class ModNameStorer
-{
-private:
-	lua_State *L;
-public:
-	ModNameStorer(lua_State *L_, const std::string modname):
-		L(L_)
-	{
-		// Store current modname in registry
-		lua_pushstring(L, modname.c_str());
-		lua_setfield(L, LUA_REGISTRYINDEX, "minetest_current_modname");
-	}
-	~ModNameStorer()
-	{
-		// Clear current modname in registry
-		lua_pushnil(L);
-		lua_setfield(L, LUA_REGISTRYINDEX, "minetest_current_modname");
-	}
-};
-
 /*
 	Getters for stuff in main tables
 */
@@ -5281,10 +5201,6 @@ void scriptapi_rm_object_reference(lua_State *L, ServerActiveObject *cobj)
 	misc
 */
 
-// What scriptapi_run_callbacks does with the return values of callbacks.
-// Regardless of the mode, if only one callback is defined,
-// its return value is the total return value.
-// Modes only affect the case where 0 or >= 2 callbacks are defined.
 enum RunCallbacksMode
 {
 	// Returns the return value of the first callback

@@ -41,6 +41,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "sound.h"
 #include "util/string.h"
 #include "hex.h"
+#include "clientapi.h"
 
 static std::string getMediaCacheDir()
 {
@@ -265,7 +266,8 @@ Client::Client(
 	m_time_of_day_set(false),
 	m_last_time_of_day_f(-1),
 	m_time_of_day_update_timer(0),
-	m_removed_sounds_check_timer(0)
+	m_removed_sounds_check_timer(0),
+	m_lua(NULL)
 {
 	m_packetcounter_timer = 0.0;
 	//m_delete_unused_sectors_timer = 0.0;
@@ -290,6 +292,17 @@ Client::Client(
 
 		m_env.addPlayer(player);
 	}
+
+	infostream<<"Client: Initializing Lua"<<std::endl;
+	m_lua = script_init();
+	assert(m_lua);
+	// Export API
+	clientapi_export(m_lua, this);
+	// Load and run builtin.lua
+	infostream<<"Client: Loading clientapitest.lua"<<std::endl;
+	bool success = clientapi_loadmod(m_lua, "/home/florian/prgm/minetest/minetest-epsilon/clientapitest.lua", "test");
+	if (success) printf("succes\n");
+	else printf("fail\n");
 }
 
 Client::~Client()
@@ -526,6 +539,12 @@ void Client::step(float dtime)
 	/*
 		Do stuff if connected
 	*/
+	
+
+	/*
+		Call ClientAPI Lua step
+	*/
+	clientapi_step(m_lua, dtime);
 	
 	/*
 		Run Map's timers and unload unused data

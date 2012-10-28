@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <cstdlib>
 #include "log.h"
 #include <iostream>
+#include "debug.h"
 
 extern "C" {
 #include <lua.h>
@@ -36,6 +37,75 @@ LuaError::LuaError(lua_State *L, const std::string &s)
 	m_s = "LuaError: ";
 	m_s += s + "\n";
 	m_s += script_get_backtrace(L);
+}
+
+StackUnroller::StackUnroller(lua_State *L):
+	m_lua(L),
+	m_original_top(-1)
+	{
+		m_original_top = lua_gettop(m_lua); // store stack height
+	}
+
+
+StackUnroller::~StackUnroller()
+	{
+		lua_settop(m_lua, m_original_top); // restore stack height
+	}
+
+ModNameStorer::ModNameStorer(lua_State *L_, const std::string modname):
+		L(L_)
+	{
+		// Store current modname in registry
+		lua_pushstring(L, modname.c_str());
+		lua_setfield(L, LUA_REGISTRYINDEX, "minetest_current_modname");
+	}
+ModNameStorer::~ModNameStorer()
+	{
+		// Clear current modname in registry
+		lua_pushnil(L);
+		lua_setfield(L, LUA_REGISTRYINDEX, "minetest_current_modname");
+	}
+
+void stackDump(lua_State *L, std::ostream &o)
+{
+  int i;
+  int top = lua_gettop(L);
+  for (i = 1; i <= top; i++) {  /* repeat for each level */
+	int t = lua_type(L, i);
+	switch (t) {
+
+	  case LUA_TSTRING:  /* strings */
+	  	o<<"\""<<lua_tostring(L, i)<<"\"";
+		break;
+
+	  case LUA_TBOOLEAN:  /* booleans */
+		o<<(lua_toboolean(L, i) ? "true" : "false");
+		break;
+
+	  case LUA_TNUMBER:  /* numbers */ {
+	  	char buf[10];
+		snprintf(buf, 10, "%g", lua_tonumber(L, i));
+		o<<buf;
+		break; }
+
+	  default:  /* other values */
+		o<<lua_typename(L, t);
+		break;
+
+	}
+	o<<" ";
+  }
+  o<<std::endl;
+}
+
+void realitycheck(lua_State *L)
+{
+	int top = lua_gettop(L);
+	if(top >= 30){
+		dstream<<"Stack is over 30:"<<std::endl;
+		stackDump(L, dstream);
+		script_error(L, "Stack is over 30 (reality check)");
+	}
 }
 
 std::string script_get_backtrace(lua_State *L)
@@ -122,5 +192,3 @@ void script_deinit(lua_State *L)
 {
 	lua_close(L);
 }
-
-

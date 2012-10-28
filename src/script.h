@@ -39,11 +39,37 @@ public:
 	std::string m_s;
 };
 
+class StackUnroller
+{
+private:
+	lua_State *m_lua;
+	int m_original_top;
+public:
+	StackUnroller(lua_State *L);
+	~StackUnroller();
+};
+
+class ModNameStorer
+{
+private:
+	lua_State *L;
+public:
+	ModNameStorer(lua_State *L_, const std::string modname);
+	~ModNameStorer();
+};
+
 lua_State* script_init();
 void script_deinit(lua_State *L);
 std::string script_get_backtrace(lua_State *L);
 void script_error(lua_State *L, const char *fmt, ...);
 bool script_load(lua_State *L, const char *path);
+void stackDump(lua_State *L, std::ostream &o);
+void realitycheck(lua_State *L);
+
+// What scriptapi_run_callbacks does with the return values of callbacks.
+// Regardless of the mode, if only one callback is defined,
+// its return value is the total return value.
+// Modes only affect the case where 0 or >= 2 callbacks are defined.
 
 #endif
 
