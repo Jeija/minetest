@@ -1,4 +1,3 @@
-
 uniform sampler2D myTexture;
 uniform float fogDistance;
 

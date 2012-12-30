@@ -3,13 +3,25 @@ uniform mat4 mWorldViewProj;
 uniform mat4 mInvWorld;
 uniform mat4 mTransWorld;
 uniform float dayNightRatio;
+uniform float time;
 
 varying vec3 vPosition;
 
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
 void main(void)
 {
+	int wavelength = 20;
+	int waveheight = 1.7;
+	int wavespeed = 100;
+	int height_randomness = 1;
+
 	vec4 pos = gl_Vertex;
-	pos.y -= 2.0;
+	pos.y -= 3;
+	pos.y -= 	  sin (pos.z/wavelength + time * wavespeed * wavelength) * waveheight
+			+ sin ((pos.z/wavelength + time * wavespeed * wavelength)/7) * waveheight * height_randomness;
 	gl_Position = mWorldViewProj * pos;
 
 	vPosition = (mWorldViewProj * gl_Vertex).xyz;
