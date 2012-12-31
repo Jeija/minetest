@@ -36,6 +36,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "guiChatConsole.h"
 #include "config.h"
 #include "clouds.h"
+#include "particles.h"
 #include "camera.h"
 #include "farmesh.h"
 #include "mapblock.h"
@@ -2320,6 +2321,7 @@ void the_game(
 					client.setCrack(-1, v3s16(0,0,0));
 					MapNode wasnode = map.getNode(nodepos);
 					client.removeNode(nodepos);
+					addDiggingParticles(gamedef, smgr, player, nodepos);
 
 					dig_time = 0;
 					digging = false;
@@ -2587,6 +2589,11 @@ void the_game(
 			farmesh->update(v2f(player_position.X, player_position.Z),
 					brightness, farmesh_range);
 		}
+
+		/*
+			Update particles
+		*/
+		allparticles_step(dtime);
 		
 		/*
 			Fog
@@ -3088,5 +3095,3 @@ void the_game(
 	delete nodedef;
 	delete itemdef;
 }
-
-
