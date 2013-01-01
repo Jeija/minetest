@@ -36,7 +36,8 @@ Particle::Particle(
 	v3f velocity,
 	v3f acceleration,
 	float expirationtime,
-	float size
+	float size,
+	AtlasPointer ap
 ):
 	scene::ISceneNode(smgr->getRootSceneNode(), smgr, id)
 {
@@ -48,12 +49,14 @@ Particle::Particle(
 	m_material.setFlag(video::EMF_BACK_FACE_CULLING, false);
 	m_material.setFlag(video::EMF_BILINEAR_FILTER, false);
 	m_material.setFlag(video::EMF_FOG_ENABLE, true);
-	AtlasPointer ap = m_gamedef->tsrc()->getTexture("default_dirt.png");
+	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+	//AtlasPointer ap = m_gamedef->tsrc()->getTexture("default_dirt.png");
 	m_material.setTexture(0, ap.atlas);
-	tex_x0 = ap.x0();
-	tex_x1 = ap.x1();
-	tex_y0 = ap.y0();
-	tex_y1 = ap.y1();
+	float texsize = (rand()%64 + 16)/256.;
+	tex_x0 = ap.x0() + (ap.x1() - ap.x0()) * ((rand()%64)/64.-texsize);
+	tex_x1 = tex_x0  + (ap.x1() - ap.x0()) * texsize;
+	tex_y0 = ap.y0() + (ap.y1() - ap.y0()) * ((rand()%64)/64.-texsize);
+	tex_y1 = tex_y0  + (ap.y1() - ap.y0()) * texsize;
 
 
 	// Particle related
@@ -67,7 +70,6 @@ Particle::Particle(
 
 	// Irrlicht stuff (TODO)
 	m_box = core::aabbox3d<f32>(-size, -size, -size, size, size, size);
-	std::cout<<"new particle"<<std::endl;
 	this->setAutomaticCulling(scene::EAC_OFF);
 }
 
@@ -125,7 +127,7 @@ void Particle::step(float dtime)
 // To be changed TODO!
 Particle *all_particles[10000] = {NULL};
 
-void allparticles_step (float dtime)
+void allparticles_step (float dtime, )
 {
 	for(u16 i = 0; i< 10000; i++)
 	{
@@ -134,7 +136,7 @@ void allparticles_step (float dtime)
 	}
 }
 
-void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos)
+void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, AtlasPointer texture)
 {
 	for (u16 j = 0; j < 10; j++)
 	{
@@ -154,7 +156,8 @@ void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPla
 			velocity,
 			acceleration,
 			10,
-			BS/(rand()%10+4));
+			BS/(rand()%12+6),
+			texture);
 
 		for (u16 i = 0; i< 10000; i++)
 		{

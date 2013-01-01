@@ -39,7 +39,8 @@ class Particle : public scene::ISceneNode
 		v3f velocity,
 		v3f acceleration,
 		float expirationtime,
-		float size
+		float size,
+		AtlasPointer texture
 	);
 	~Particle();
 
@@ -83,6 +84,6 @@ private:
 
 void allparticles_step (float dtime);
 
-void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos);
+void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, AtlasPointer texture);
 
 #endif

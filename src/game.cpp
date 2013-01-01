@@ -2321,7 +2321,9 @@ void the_game(
 					client.setCrack(-1, v3s16(0,0,0));
 					MapNode wasnode = map.getNode(nodepos);
 					client.removeNode(nodepos);
-					addDiggingParticles(gamedef, smgr, player, nodepos);
+					const ContentFeatures &features = client.getNodeDefManager()->get(wasnode);
+					AtlasPointer texture = features.tiles[1].texture; //TODO only up tile yet
+					addDiggingParticles(gamedef, smgr, player, nodepos, texture);
 
 					dig_time = 0;
 					digging = false;
