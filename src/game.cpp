@@ -2322,8 +2322,7 @@ void the_game(
 					MapNode wasnode = map.getNode(nodepos);
 					client.removeNode(nodepos);
 					const ContentFeatures &features = client.getNodeDefManager()->get(wasnode);
-					AtlasPointer texture = features.tiles[1].texture; //TODO only up tile yet
-					addDiggingParticles(gamedef, smgr, player, nodepos, texture);
+					addDiggingParticles(gamedef, smgr, player, nodepos, features.tiles);
 
 					dig_time = 0;
 					digging = false;
@@ -2595,7 +2594,8 @@ void the_game(
 		/*
 			Update particles
 		*/
-		allparticles_step(dtime);
+
+		allparticles_step(dtime, client.getEnv().getClientMap());
 		
 		/*
 			Fog

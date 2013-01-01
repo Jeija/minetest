@@ -62,14 +62,18 @@ class Particle : public scene::ISceneNode
 	virtual void OnRegisterSceneNode();
 	virtual void render();
 
-	void step(float dtime);
+	void step(float dtime, Map &map);
 
+	bool get_expired ()
+	{ return m_expiration < m_time; }
+ 
 private:
 	float m_time;
 	float m_expiration;
 
 	IGameDef *m_gamedef;
 	core::aabbox3d<f32> m_box;
+	core::aabbox3d<f32> m_collisionbox;
 	video::SMaterial m_material;
 	v3f m_pos;
 	v3f m_velocity;
@@ -82,8 +86,8 @@ private:
 	float m_size;
 };
 
-void allparticles_step (float dtime);
+void allparticles_step (float dtime, Map &map);
 
-void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, AtlasPointer texture);
+void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[]);
 
 #endif

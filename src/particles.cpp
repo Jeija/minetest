@@ -24,6 +24,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "settings.h"
 #include "tile.h"
 #include "gamedef.h"
+#include "collision.h"
 #include <stdlib.h>
 #include "util/numeric.h"
 
@@ -69,7 +70,7 @@ Particle::Particle(
 	m_size = size;
 
 	// Irrlicht stuff (TODO)
-	m_box = core::aabbox3d<f32>(-size, -size, -size, size, size, size);
+	m_collisionbox = core::aabbox3d<f32>(-size/2,-size/2,-size/2,size/2,size/2,size/2);
 	this->setAutomaticCulling(scene::EAC_OFF);
 }
 
@@ -79,8 +80,11 @@ Particle::~Particle()
 
 void Particle::OnRegisterSceneNode()
 {
-	//SceneManager->registerNodeForRendering(this, scene::ESNRP_TRANSPARENT);
-	SceneManager->registerNodeForRendering(this, scene::ESNRP_SOLID);
+	if (IsVisible)
+	{
+		SceneManager->registerNodeForRendering(this, scene::ESNRP_TRANSPARENT);
+		SceneManager->registerNodeForRendering(this, scene::ESNRP_SOLID);
+	}
 
 	ISceneNode::OnRegisterSceneNode();
 }
@@ -108,8 +112,8 @@ void Particle::render()
 	{
 		vertices[i].Pos.rotateYZBy(m_player->getPitch());
 		vertices[i].Pos.rotateXZBy(m_player->getYaw());
-		vertices[i].Pos += m_pos*BS;
             m_box.addInternalPoint(vertices[i].Pos);
+		vertices[i].Pos += m_pos*BS;
 	}
 
 	u16 indices[] = {0,1,2, 2,3,0};
@@ -117,36 +121,60 @@ void Particle::render()
 			video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
 }
 
-void Particle::step(float dtime)
+void Particle::step(float dtime, Map &map)
 {
+	core::aabbox3d<f32> box = m_collisionbox;
+	v3f p_pos = m_pos*BS;
+	v3f p_velocity = m_velocity*BS;
+	v3f p_acceleration = m_acceleration*BS;
+	collisionMoveSimple(&map, m_gamedef,
+		BS*0.5, box,
+		0, dtime,
+		p_pos, p_velocity, p_acceleration);
+	m_pos = p_pos/BS;
+	m_velocity = p_velocity/BS;
+	m_acceleration = p_acceleration/BS;
 	m_time += dtime;
-	m_velocity += m_acceleration * dtime;
-	m_pos += m_velocity * dtime;
 }
 
 // To be changed TODO!
 Particle *all_particles[10000] = {NULL};
 
-void allparticles_step (float dtime, )
+// Map is for collision detection
+void allparticles_step (float dtime, Map &map)
 {
 	for(u16 i = 0; i< 10000; i++)
 	{
 		if (all_particles[i] != NULL)
-			all_particles[i]->step(dtime);
+		{
+			if (all_particles[i]->get_expired())
+			{
+				all_particles[i]->remove();
+				delete all_particles[i];
+				all_particles[i] = NULL;
+			}
+			else
+			{
+				all_particles[i]->step(dtime, map);
+			}
+		}
 	}
 }
 
-void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, AtlasPointer texture)
+void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[])
 {
-	for (u16 j = 0; j < 10; j++)
+	for (u16 j = 0; j < 16; j++)
 	{
-		v3f velocity(rand()%100/100.-0.5, 2, rand()%100/100.-0.5);
+		v3f velocity((rand()%100/50.-1)/1.5, rand()%100/35., (rand()%100/50.-1)/1.5);
 		v3f acceleration(0,-9,0);
 		v3f particlepos = v3f(
 			(f32)pos.X+rand()%100/200.-0.25,
 			(f32)pos.Y+rand()%100/200.-0.25,
 			(f32)pos.Z+rand()%100/200.-0.25
 		);
+
+		u8 texid = myrand_range(0,5);
+
 		Particle *particle = new Particle(
 			gamedef,
 			smgr,
@@ -155,9 +183,9 @@ void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPla
 			particlepos,
 			velocity,
 			acceleration,
-			10,
+			rand()%100/100.,
 			BS/(rand()%12+6),
-			texture);
+			tiles[texid].texture);
 
 		for (u16 i = 0; i< 10000; i++)
 		{
