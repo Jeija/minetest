@@ -103,7 +103,7 @@ void Particle::render()
 		video::S3DVertex(m_size/2,m_size/2,0, 0,0,0, c, 
 		m_ap.x1(), m_ap.y0()),
 		video::S3DVertex(-m_size/2,m_size/2,0, 0,0,0, c, 
-		m_ap.x0(), m_ap.y1()),
+		m_ap.x0(), m_ap.y0()),
 	};
 
 	for(u16 i=0; i<4; i++)
@@ -135,26 +135,23 @@ void Particle::step(float dtime, Map &map)
 	m_time += dtime;
 }
 
-// To be changed TODO!
-Particle *all_particles[10000] = {NULL};
+std::vector<Particle*> all_particles;
 
 // Map is for collision detection
 void allparticles_step (float dtime, Map &map)
 {
-	for(u16 i = 0; i< 10000; i++)
+	for(std::vector<Particle*>::iterator i = all_particles.begin(); i != all_particles.end();)
 	{
-		if (all_particles[i] != NULL)
+		if ((*i)->get_expired())
 		{
-			if (all_particles[i]->get_expired())
-			{
-				all_particles[i]->remove();
-				delete all_particles[i];
-				all_particles[i] = NULL;
-			}
-			else
-			{
-				all_particles[i]->step(dtime, map);
-			}
+			(*i)->remove();
+			delete *i;
+			all_particles.erase(i);
+		}
+		else
+		{
+			(*i)->step(dtime, map);
+			i++;
 		}
 	}
 }
@@ -179,7 +176,9 @@ void addNodeParticle(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer 
 	// Texture
 	u8 texid = myrand_range(0,5);
 	AtlasPointer ap = tiles[texid].texture;
-	float texsize = (rand()%64 + 16)/256.;
+	float size = rand()%64/512.;
+	float visual_size = BS*size;
+	float texsize = size*2;
 
 	float x1 = ap.x1();
 	float y1 = ap.y1();
@@ -207,16 +206,9 @@ void addNodeParticle(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer 
 		particlepos,
 		velocity,
 		acceleration,
-		rand()%100/100.,
-		BS/(rand()%12+6),
+		rand()%100/100., // expiration time
+		visual_size,
 		ap);
 
-	for (u16 i = 0; i< 10000; i++)
-	{
-		if (all_particles[i] == NULL) 
-		{
-			all_particles[i] = particle;
-			break;
-		}
-	}
+	all_particles.push_back(particle);
 }
