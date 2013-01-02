@@ -51,13 +51,8 @@ Particle::Particle(
 	m_material.setFlag(video::EMF_BILINEAR_FILTER, false);
 	m_material.setFlag(video::EMF_FOG_ENABLE, true);
 	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-	//AtlasPointer ap = m_gamedef->tsrc()->getTexture("default_dirt.png");
 	m_material.setTexture(0, ap.atlas);
-	float texsize = (rand()%64 + 16)/256.;
-	tex_x0 = ap.x0() + (ap.x1() - ap.x0()) * ((rand()%64)/64.-texsize);
-	tex_x1 = tex_x0  + (ap.x1() - ap.x0()) * texsize;
-	tex_y0 = ap.y0() + (ap.y1() - ap.y0()) * ((rand()%64)/64.-texsize);
-	tex_y1 = tex_y0  + (ap.y1() - ap.y0()) * texsize;
+	m_ap = ap;
 
 
 	// Particle related
@@ -91,6 +86,9 @@ void Particle::OnRegisterSceneNode()
 
 void Particle::render()
 {
+	// TODO: Light
+	// TODO: Render particles in front of water and the selectionbox
+
 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
 	driver->setMaterial(m_material);
 	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
@@ -99,13 +97,13 @@ void Particle::render()
 	video::S3DVertex vertices[4] =
 	{
 		video::S3DVertex(-m_size/2,-m_size/2,0, 0,0,0, c, 
-		tex_x0, tex_y1),
+		m_ap.x0(), m_ap.y1()),
 		video::S3DVertex(m_size/2,-m_size/2,0, 0,0,0, c, 
-		tex_x1, tex_y1),
+		m_ap.x1(), m_ap.y1()),
 		video::S3DVertex(m_size/2,m_size/2,0, 0,0,0, c, 
-		tex_x1, tex_y0),
+		m_ap.x1(), m_ap.y0()),
 		video::S3DVertex(-m_size/2,m_size/2,0, 0,0,0, c, 
-		tex_x0, tex_y0),
+		m_ap.x0(), m_ap.y1()),
 	};
 
 	for(u16 i=0; i<4; i++)
@@ -163,37 +161,62 @@ void allparticles_step (float dtime, Map &map)
 
 void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[])
 {
-	for (u16 j = 0; j < 16; j++)
+	for (u16 j = 0; j < 32; j++) // set the amount of particles here
 	{
-		v3f velocity((rand()%100/50.-1)/1.5, rand()%100/35., (rand()%100/50.-1)/1.5);
-		v3f acceleration(0,-9,0);
-		v3f particlepos = v3f(
-			(f32)pos.X+rand()%100/200.-0.25,
-			(f32)pos.Y+rand()%100/200.-0.25,
-			(f32)pos.Z+rand()%100/200.-0.25
-		);
+		addNodeParticle(gamedef, smgr, player, pos, tiles);
+	}
+}
 
-		u8 texid = myrand_range(0,5);
+void addPunchingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[])
+{
+	addNodeParticle(gamedef, smgr, player, pos, tiles);
+}
 
-		Particle *particle = new Particle(
-			gamedef,
-			smgr,
-			player,
-			0,
-			particlepos,
-			velocity,
-			acceleration,
-			rand()%100/100.,
-			BS/(rand()%12+6),
-			tiles[texid].texture);
+// add a particle of a node
+// used by digging and punching particles
+void addNodeParticle(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[])
+{
+	// Texture
+	u8 texid = myrand_range(0,5);
+	AtlasPointer ap = tiles[texid].texture;
+	float texsize = (rand()%64 + 16)/256.;
 
-		for (u16 i = 0; i< 10000; i++)
+	float x1 = ap.x1();
+	float y1 = ap.y1();
+
+	ap.size.X = (ap.x1() - ap.x0()) * texsize;
+	ap.size.Y = (ap.x1() - ap.x0()) * texsize;
+
+	ap.pos.X = ap.x0() + (x1 - ap.x0()) * ((rand()%64)/64.-texsize);
+	ap.pos.Y = ap.y0() + (y1 - ap.y0()) * ((rand()%64)/64.-texsize);
+
+	// Physics
+	v3f velocity((rand()%100/50.-1)/1.5, rand()%100/35., (rand()%100/50.-1)/1.5);
+	v3f acceleration(0,-9,0);
+	v3f particlepos = v3f(
+		(f32)pos.X+rand()%100/200.-0.25,
+		(f32)pos.Y+rand()%100/200.-0.25,
+		(f32)pos.Z+rand()%100/200.-0.25
+	);
+
+	Particle *particle = new Particle(
+		gamedef,
+		smgr,
+		player,
+		0,
+		particlepos,
+		velocity,
+		acceleration,
+		rand()%100/100.,
+		BS/(rand()%12+6),
+		ap);
+
+	for (u16 i = 0; i< 10000; i++)
+	{
+		if (all_particles[i] == NULL) 
 		{
-			if (all_particles[i] == NULL) 
-			{
-				all_particles[i] = particle;
-				break;
-			}
+			all_particles[i] = particle;
+			break;
 		}
 	}
 }

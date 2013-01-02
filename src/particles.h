@@ -84,10 +84,13 @@ private:
 	float tex_y1;
 	LocalPlayer *m_player;
 	float m_size;
+	AtlasPointer m_ap;
 };
 
 void allparticles_step (float dtime, Map &map);
 
 void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[]);
+void addPunchingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[]);
+void addNodeParticle(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[]);
 
 #endif

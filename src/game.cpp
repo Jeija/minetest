@@ -2281,6 +2281,9 @@ void the_game(
 					}
 				}
 
+				const ContentFeatures &features = client.getNodeDefManager()->get(n);
+				addPunchingParticles(gamedef, smgr, player, nodepos, features.tiles);
+
 				float dig_time_complete = 0.0;
 
 				if(params.diggable == false)
