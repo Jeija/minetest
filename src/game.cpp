@@ -3081,6 +3081,21 @@ void the_game(
 		}
 
 		/*
+			Movement FOV (for superspeed and flying)
+		*/
+
+		float flying_fov = 5;
+		float superspeed_fov = 8;
+		float max_fov = 0;
+		if (player->free_move) max_fov += flying_fov;
+		if (player->superspeed) max_fov += superspeed_fov;
+
+		if ((player->free_move || player->superspeed) && player->movement_fov < max_fov)
+			player->movement_fov += dtime*50;
+		if (player->movement_fov > max_fov)
+			player->movement_fov -= dtime*50;
+
+		/*
 			Draw gui
 		*/
 		// 0-1ms
