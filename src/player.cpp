@@ -35,7 +35,8 @@ Player::Player(IGameDef *gamedef):
 	inventory(gamedef->idef()),
 	hp(PLAYER_MAX_HP),
 	superspeed(false),
-	superspeed_fov_strength(0),
+	free_move(false),
+	movement_fov(0),
 	peer_id(PEER_ID_INEXISTENT),
 // protected
 	m_gamedef(gamedef),

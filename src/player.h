@@ -213,7 +213,8 @@ public:
 	float hurt_tilt_strength;
 
 	bool  superspeed;
-	float superspeed_fov_strength;
+	bool  free_move;
+	float movement_fov;
 
 	u16 peer_id;
 	

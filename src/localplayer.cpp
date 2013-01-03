@@ -385,7 +385,7 @@ void LocalPlayer::applyControl(float dtime)
 	bool fly_allowed = m_gamedef->checkLocalPrivilege("fly");
 	bool fast_allowed = m_gamedef->checkLocalPrivilege("fast");
 
-	bool free_move = fly_allowed && g_settings->getBool("free_move");
+	free_move = fly_allowed && g_settings->getBool("free_move");
 	bool fast_move = fast_allowed && g_settings->getBool("fast_move");
 	bool continuous_forward = g_settings->getBool("continuous_forward");
 
