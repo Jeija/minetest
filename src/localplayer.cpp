@@ -397,7 +397,7 @@ void LocalPlayer::applyControl(float dtime)
 	}
 
 	// Whether superspeed mode is used or not
-	bool superspeed = false;
+	superspeed = false;
 	
 	// Old descend control
 	if(g_settings->getBool("aux1_descends"))

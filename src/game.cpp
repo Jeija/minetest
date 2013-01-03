@@ -3081,6 +3081,14 @@ void the_game(
 		}
 
 		/*
+			Superspeed FOV
+		*/
+		if (player->superspeed && player->superspeed_fov_strength < 8)
+			player->superspeed_fov_strength += dtime*50;
+		if (!player->superspeed && player->superspeed_fov_strength > 0)
+			player->superspeed_fov_strength -= dtime*50;
+
+		/*
 			Draw gui
 		*/
 		// 0-1ms

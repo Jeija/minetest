@@ -306,6 +306,9 @@ void Camera::update(LocalPlayer* player, f32 frametime, v2u32 screensize,
 	fov_degrees = MYMAX(fov_degrees, 10.0);
 	fov_degrees = MYMIN(fov_degrees, 170.0);
 
+	// Greater FOV if running
+	fov_degrees += player->superspeed_fov_strength;
+
 	// FOV and aspect ratio
 	m_aspect = (f32)screensize.X / (f32) screensize.Y;
 	m_fov_y = fov_degrees * M_PI / 180.0;
