@@ -13,8 +13,8 @@ float rand(vec2 co){
 
 void main(void)
 {
+	float waveheight = 1.7;
 	int wavelength = 20;
-	int waveheight = 1.7;
 	int wavespeed = 100;
 	int height_randomness = 1;
 
