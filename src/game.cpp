@@ -2608,7 +2608,7 @@ void the_game(
 			Update particles
 		*/
 
-		allparticles_step(dtime, client.getEnv().getClientMap());
+		allparticles_step(dtime, client.getEnv());
 		
 		/*
 			Fog

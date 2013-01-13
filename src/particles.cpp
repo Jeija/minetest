@@ -27,6 +27,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "collision.h"
 #include <stdlib.h>
 #include "util/numeric.h"
+#include "light.h"
+#include "environment.h"
+#include "clientmap.h"
+#include "mapnode.h"
 
 Particle::Particle(
 	IGameDef *gamedef,
@@ -53,6 +57,7 @@ Particle::Particle(
 	m_material.MaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 	m_material.setTexture(0, ap.atlas);
 	m_ap = ap;
+	m_light = 0;
 
 
 	// Particle related
@@ -86,13 +91,12 @@ void Particle::OnRegisterSceneNode()
 
 void Particle::render()
 {
-	// TODO: Light
 	// TODO: Render particles in front of water and the selectionbox
 
 	video::IVideoDriver* driver = SceneManager->getVideoDriver();
 	driver->setMaterial(m_material);
 	driver->setTransform(video::ETS_WORLD, AbsoluteTransformation);
-	video::SColor c(255, 255, 255, 255);
+	video::SColor c(255, m_light, m_light, m_light);
 
 	video::S3DVertex vertices[4] =
 	{
@@ -119,13 +123,13 @@ void Particle::render()
 			video::EVT_STANDARD, scene::EPT_TRIANGLES, video::EIT_16BIT);
 }
 
-void Particle::step(float dtime, Map &map)
+void Particle::step(float dtime, ClientEnvironment &env)
 {
 	core::aabbox3d<f32> box = m_collisionbox;
 	v3f p_pos = m_pos*BS;
 	v3f p_velocity = m_velocity*BS;
 	v3f p_acceleration = m_acceleration*BS;
-	collisionMoveSimple(&map, m_gamedef,
+	collisionMoveSimple(&env.getClientMap(), m_gamedef,
 		BS*0.5, box,
 		0, dtime,
 		p_pos, p_velocity, p_acceleration);
@@ -133,12 +137,28 @@ void Particle::step(float dtime, Map &map)
 	m_velocity = p_velocity/BS;
 	m_acceleration = p_acceleration/BS;
 	m_time += dtime;
+
+	// Update lighting
+	u8 light = 0;
+	try{
+		v3s16 p = v3s16(
+			floor(m_pos.X+0.5),
+			floor(m_pos.Y+0.5),
+			floor(m_pos.Z+0.5)
+		);
+		MapNode n = env.getClientMap().getNode(p);
+		light = n.getLightBlend(env.getDayNightRatio(), m_gamedef->ndef());
+	}
+	catch(InvalidPositionException &e){
+		light = blend_light(env.getDayNightRatio(), LIGHT_SUN, 0);
+	}
+	m_light = decode_light(light);
 }
 
 std::vector<Particle*> all_particles;
 
 // Map is for collision detection
-void allparticles_step (float dtime, Map &map)
+void allparticles_step (float dtime, ClientEnvironment &env)
 {
 	for(std::vector<Particle*>::iterator i = all_particles.begin(); i != all_particles.end();)
 	{
@@ -150,7 +170,7 @@ void allparticles_step (float dtime, Map &map)
 		}
 		else
 		{
-			(*i)->step(dtime, map);
+			(*i)->step(dtime, env);
 			i++;
 		}
 	}

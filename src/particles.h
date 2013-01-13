@@ -26,6 +26,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes_extrabloated.h"
 #include "tile.h"
 #include "localplayer.h"
+#include "environment.h"
 
 class Particle : public scene::ISceneNode
 {
@@ -62,7 +63,7 @@ class Particle : public scene::ISceneNode
 	virtual void OnRegisterSceneNode();
 	virtual void render();
 
-	void step(float dtime, Map &map);
+	void step(float dtime, ClientEnvironment &env);
 
 	bool get_expired ()
 	{ return m_expiration < m_time; }
@@ -85,9 +86,10 @@ private:
 	LocalPlayer *m_player;
 	float m_size;
 	AtlasPointer m_ap;
+	u8 m_light;
 };
 
-void allparticles_step (float dtime, Map &map);
+void allparticles_step (float dtime, ClientEnvironment &env);
 
 void addDiggingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[]);
 void addPunchingParticles(IGameDef* gamedef, scene::ISceneManager* smgr, LocalPlayer *player, v3s16 pos, const TileSpec tiles[]);
