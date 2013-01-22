@@ -118,13 +118,20 @@ struct TextDestPlayerInventory : public TextDest
 	TextDestPlayerInventory(Client *client)
 	{
 		m_client = client;
+		m_formname = "";
+	}
+	TextDestPlayerInventory(Client *client, std::string formname)
+	{
+		m_client = client;
+		m_formname = formname;
 	}
 	void gotText(std::map<std::string, std::string> fields)
 	{
-		m_client->sendInventoryFields("", fields);
+		m_client->sendInventoryFields(m_formname, fields);
 	}
 
 	Client *m_client;
+	std::string m_formname;
 };
 
 /* Respawn menu callback */
@@ -192,6 +199,32 @@ public:
 	Client *m_client;
 };
 
+class FormspecFormSource: public IFormSource
+{
+public:
+	FormspecFormSource(std::string formspec,FormspecFormSource** game_formspec)
+	{
+		m_formspec = formspec;
+		m_game_formspec = game_formspec;
+	}
+
+	~FormspecFormSource()
+	{
+		*m_game_formspec = 0;
+	}
+
+	void setForm(std::string formspec) {
+		m_formspec = formspec;
+	}
+
+	std::string getForm()
+	{
+		return m_formspec;
+	}
+
+	std::string m_formspec;
+	FormspecFormSource** m_game_formspec;
+};
 /*
 	Hotbar draw routine
 */
@@ -901,6 +934,7 @@ void the_game(
 	bool simple_singleplayer_mode
 )
 {
+	FormspecFormSource* current_formspec = 0;
 	video::IVideoDriver* driver = device->getVideoDriver();
 	scene::ISceneManager* smgr = device->getSceneManager();
 	
@@ -1280,8 +1314,11 @@ void the_game(
 	bool digging = false;
 	bool ldown_for_dig = false;
 
-	float damage_flash_timer = 0;
+	float damage_flash = 0;
 	s16 farmesh_range = 20*MAP_BLOCKSIZE;
+
+	float jump_timer = 0;
+	bool reset_jump_timer = false;
 
 	const float object_hit_delay = 0.2;
 	float object_hit_delay_timer = 0.0;
@@ -1308,6 +1345,8 @@ void the_game(
 	float time_of_day = 0;
 	float time_of_day_smooth = 0;
 
+	float repeat_rightclick_timer = 0;
+
 	/*
 		Shader constants
 	*/
@@ -1328,6 +1367,10 @@ void the_game(
 	// NOTE: getRealTime() causes strange problems in wine (imprecision?)
 	// NOTE: So we have to use getTime() and call run()s between them
 	u32 lasttime = device->getTimer()->getTime();
+
+	LocalPlayer* player = client.getEnv().getLocalPlayer();
+	player->hurt_tilt_timer = 0;
+	player->hurt_tilt_strength = 0;
 
 	for(;;)
 	{
@@ -1559,6 +1602,10 @@ void the_game(
 		// Input handler step() (used by the random input generator)
 		input->step(dtime);
 
+		// Increase timer for doubleclick of "jump"
+		if(g_settings->getBool("doubletap_jump") && jump_timer <= 0.2)
+			jump_timer += dtime;
+
 		/*
 			Launch menus and trigger stuff according to keys
 		*/
@@ -1647,6 +1694,27 @@ void the_game(
 				if(!client.checkPrivilege("fly"))
 					statustext += L" (note: no 'fly' privilege)";
 			}
+		}
+		else if(input->wasKeyDown(getKeySetting("keymap_jump")))
+		{
+			if(g_settings->getBool("doubletap_jump") && jump_timer < 0.2)
+			{
+				if(g_settings->getBool("free_move"))
+				{
+					g_settings->set("free_move","false");
+					statustext = L"free_move disabled";
+					statustext_time = 0;
+				}
+				else
+				{
+					g_settings->set("free_move","true");
+					statustext = L"free_move enabled";
+					statustext_time = 0;
+					if(!client.checkPrivilege("fly"))
+						statustext += L" (note: no 'fly' privilege)";
+				}
+			}
+			reset_jump_timer = true;
 		}
 		else if(input->wasKeyDown(getKeySetting("keymap_fastmove")))
 		{
@@ -1810,6 +1878,13 @@ void the_game(
 			statustext_time = 0;
 		}
 		
+		// Reset jump_timer
+		if(!input->isKeyDown(getKeySetting("keymap_jump")) && reset_jump_timer)
+		{
+			reset_jump_timer = false;
+			jump_timer = 0.0;
+		}
+
 		// Handle QuicktuneShortcutter
 		if(input->wasKeyDown(getKeySetting("keymap_quicktune_next")))
 			quicktune.next();
@@ -2024,14 +2099,18 @@ void the_game(
 				{
 					break;
 				}
-				else if(event.type == CE_PLAYER_DAMAGE)
+				else if(event.type == CE_PLAYER_DAMAGE &&
+						client.getHP() != 0)
 				{
 					//u16 damage = event.player_damage.amount;
 					//infostream<<"Player damage: "<<damage<<std::endl;
-					damage_flash_timer = 0.05;
-					if(event.player_damage.amount >= 2){
-						damage_flash_timer += 0.05 * event.player_damage.amount;
-					}
+
+					damage_flash += 100.0;
+					damage_flash += 8.0 * event.player_damage.amount;
+
+					player->hurt_tilt_timer = 1.5;
+					player->hurt_tilt_strength = event.player_damage.amount/2;
+					player->hurt_tilt_strength = rangelim(player->hurt_tilt_strength, 2.0, 10.0);
 				}
 				else if(event.type == CE_PLAYER_FORCE_MOVE)
 				{
@@ -2061,11 +2140,38 @@ void the_game(
 
 					/* Handle visualization */
 
-					damage_flash_timer = 0;
+					damage_flash = 0;
+
+					LocalPlayer* player = client.getEnv().getLocalPlayer();
+					player->hurt_tilt_timer = 0;
+					player->hurt_tilt_strength = 0;
 
 					/*LocalPlayer* player = client.getLocalPlayer();
 					player->setPosition(player->getPosition() + v3f(0,-BS,0));
 					camera.update(player, busytime, screensize);*/
+				}
+				else if (event.type == CE_SHOW_FORMSPEC)
+				{
+					if (current_formspec == 0)
+					{
+						/* Create menu */
+						current_formspec = new FormspecFormSource(*(event.show_formspec.formspec),&current_formspec);
+
+						GUIFormSpecMenu *menu =
+								new GUIFormSpecMenu(device, guiroot, -1,
+										&g_menumgr,
+										&client, gamedef);
+						menu->setFormSource(current_formspec);
+						menu->setTextDest(new TextDestPlayerInventory(&client,*(event.show_formspec.formname)));
+						menu->drop();
+					}
+					else
+					{
+						/* update menu */
+						current_formspec->setForm(*(event.show_formspec.formspec));
+					}
+					delete(event.show_formspec.formspec);
+					delete(event.show_formspec.formname);
 				}
 				else if(event.type == CE_TEXTURES_UPDATED)
 				{
@@ -2207,6 +2313,9 @@ void the_game(
 		bool left_punch = false;
 		soundmaker.m_player_leftpunch_sound.name = "";
 
+		if(input->getRightState())
+			repeat_rightclick_timer += dtime;
+
 		if(playeritem_usable && input->getLeftState())
 		{
 			if(input->getLeftClicked())
@@ -2347,8 +2456,10 @@ void the_game(
 				camera.setDigging(0);  // left click animation
 			}
 
-			if(input->getRightClicked())
+			if(input->getRightClicked() ||
+					repeat_rightclick_timer >= g_settings->getFloat("repeat_rightclick_time"))
 			{
+				repeat_rightclick_timer = 0;
 				infostream<<"Ground right-clicked"<<std::endl;
 				
 				// Sign special case, at least until formspec is properly implemented.
@@ -2920,6 +3031,11 @@ void the_game(
 
 		if(show_hud)
 		{
+			v3f selectionbox_color = g_settings->getV3F("selectionbox_color");
+			u32 selectionbox_color_r = rangelim(myround(selectionbox_color.X), 0, 255);
+			u32 selectionbox_color_g = rangelim(myround(selectionbox_color.Y), 0, 255);
+			u32 selectionbox_color_b = rangelim(myround(selectionbox_color.Z), 0, 255);
+
 			for(std::vector<aabb3f>::const_iterator
 					i = hilightboxes.begin();
  					i != hilightboxes.end(); i++)
@@ -2929,7 +3045,7 @@ void the_game(
 						<<" max="
 						<<"("<<i->MaxEdge.X<<","<<i->MaxEdge.Y<<","<<i->MaxEdge.Z<<")"
 						<<std::endl;*/
-				driver->draw3DBox(*i, video::SColor(255,0,0,0));
+				driver->draw3DBox(*i, video::SColor(255,selectionbox_color_r,selectionbox_color_g,selectionbox_color_b));
 			}
 		}
 
@@ -2962,12 +3078,18 @@ void the_game(
 		*/
 		if(show_hud)
 		{
+			v3f crosshair_color = g_settings->getV3F("crosshair_color");
+			u32 crosshair_color_r = rangelim(myround(crosshair_color.X), 0, 255);
+			u32 crosshair_color_g = rangelim(myround(crosshair_color.Y), 0, 255);
+			u32 crosshair_color_b = rangelim(myround(crosshair_color.Z), 0, 255);
+			u32 crosshair_alpha = rangelim(g_settings->getS32("crosshair_alpha"), 0, 255);
+
 			driver->draw2DLine(displaycenter - core::vector2d<s32>(10,0),
 					displaycenter + core::vector2d<s32>(10,0),
-					video::SColor(255,255,255,255));
+					video::SColor(crosshair_alpha,crosshair_color_r,crosshair_color_g,crosshair_color_b));
 			driver->draw2DLine(displaycenter - core::vector2d<s32>(0,10),
 					displaycenter + core::vector2d<s32>(0,10),
-					video::SColor(255,255,255,255));
+					video::SColor(crosshair_alpha,crosshair_color_r,crosshair_color_g,crosshair_color_b));
 		}
 
 		} // timer
@@ -2990,14 +3112,24 @@ void the_game(
 		/*
 			Damage flash
 		*/
-		if(damage_flash_timer > 0.0)
+		if(damage_flash > 0.0)
 		{
-			damage_flash_timer -= dtime;
-			
-			video::SColor color(128,255,0,0);
+			video::SColor color(std::min(damage_flash, 180.0f),180,0,0);
 			driver->draw2DRectangle(color,
 					core::rect<s32>(0,0,screensize.X,screensize.Y),
 					NULL);
+			
+			damage_flash -= 100.0*dtime;
+		}
+
+		/*
+			Damage camera tilt
+		*/
+		if(player->hurt_tilt_timer > 0.0)
+		{
+			player->hurt_tilt_timer -= dtime*5;
+			if(player->hurt_tilt_timer < 0)
+				player->hurt_tilt_strength = 0;
 		}
 
 		/*
