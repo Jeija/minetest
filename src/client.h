@@ -156,7 +156,9 @@ enum ClientEventType
 	CE_PLAYER_FORCE_MOVE,
 	CE_DEATHSCREEN,
 	CE_TEXTURES_UPDATED,
-	CE_SHOW_FORMSPEC
+	CE_SHOW_FORMSPEC,
+	CE_RECONNECT_LOCAL,
+	CE_RECONNECT_MULTIPLAYER
 };
 
 struct ClientEvent
@@ -184,6 +186,14 @@ struct ClientEvent
 		} show_formspec;
 		struct{
 		} textures_updated;
+		struct{
+			std::string *map;
+			std::string *gameid;
+		} reconnect_local;
+		struct{
+			std::string *address;
+			u16 port;
+		} reconnect_multiplayer;
 	};
 };
 

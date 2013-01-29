@@ -932,7 +932,8 @@ void the_game(
 	std::string configpath,
 	ChatBackend &chat_backend,
 	const SubgameSpec &gamespec, // Used for local game,
-	bool simple_singleplayer_mode
+	bool simple_singleplayer_mode,
+	ReconnectSpec *reconnect
 )
 {
 	FormspecFormSource* current_formspec = 0;
@@ -2173,6 +2174,22 @@ void the_game(
 					}
 					delete(event.show_formspec.formspec);
 					delete(event.show_formspec.formname);
+				}
+				else if (event.type == CE_RECONNECT_LOCAL)
+				{
+					reconnect->map = *event.reconnect_local.map;
+					reconnect->gameid = *event.reconnect_local.gameid;
+					reconnect->enable = true;
+
+					g_gamecallback->disconnect();
+				}
+				else if (event.type == CE_RECONNECT_MULTIPLAYER)
+				{
+					reconnect->port = event.reconnect_multiplayer.port;
+					reconnect->address = *event.reconnect_multiplayer.address;
+					reconnect->enable = true;
+
+					g_gamecallback->disconnect();
 				}
 				else if(event.type == CE_TEXTURES_UPDATED)
 				{

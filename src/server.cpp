@@ -3732,6 +3732,42 @@ void Server::BroadcastChatMessage(const std::wstring &message)
 	}
 }
 
+void Server::SendReconnectPlayer(u16 peer_id, const char *map, const char *gameid)
+{
+	DSTACK(__FUNCTION_NAME);
+
+	std::ostringstream os(std::ios_base::binary);
+
+	// Write command
+	writeU16(os, TOCLIENT_RECONNECT_LOCAL);
+	os<<serializeString(map);
+	os<<serializeString(gameid);
+
+	// Make data buffer
+	std::string s = os.str();
+	SharedBuffer<u8> data((u8*)s.c_str(), s.size());
+	// Send as reliable
+	m_con.Send(peer_id, 0, data, true);
+}
+
+void Server::SendReconnectPlayer(u16 peer_id, const char *address, u16 port)
+{
+	DSTACK(__FUNCTION_NAME);
+
+	std::ostringstream os(std::ios_base::binary);
+
+	// Write command
+	writeU16(os, TOCLIENT_RECONNECT_MULTIPLAYER);
+	os<<serializeString(address);
+	writeU16(os, port);
+
+	// Make data buffer
+	std::string s = os.str();
+	SharedBuffer<u8> data((u8*)s.c_str(), s.size());
+	// Send as reliable
+	m_con.Send(peer_id, 0, data, true);
+}
+
 void Server::SendPlayerHP(u16 peer_id)
 {
 	DSTACK(__FUNCTION_NAME);
@@ -4695,6 +4731,22 @@ Inventory* Server::createDetachedInventory(const std::string &name)
 	m_detached_inventories[name] = inv;
 	sendDetachedInventoryToAll(name);
 	return inv;
+}
+
+void Server::reconnectPlayer(const char *name, const char *address, u16 port)
+{
+	Player *player = m_env->getPlayer(name);
+	if(!player)
+		return;
+	SendReconnectPlayer(player->peer_id, address, port);
+}
+
+void Server::reconnectPlayer(const char *name, const char *map, const char *gameid)
+{
+	Player *player = m_env->getPlayer(name);
+	if(!player)
+		return;
+	SendReconnectPlayer(player->peer_id, map, gameid);
 }
 
 class BoolScopeSet

@@ -124,6 +124,17 @@ public:
 class ChatBackend;  /* to avoid having to include chat.h */
 struct SubgameSpec;
 
+struct ReconnectSpec
+{
+	bool enable;
+
+	std::string map;
+	std::string gameid;
+
+	std::string address;
+	u16 port;
+};
+
 void the_game(
 	bool &kill,
 	bool random_input,
@@ -139,7 +150,8 @@ void the_game(
 	std::string configpath,
 	ChatBackend &chat_backend,
 	const SubgameSpec &gamespec, // Used for local game
-	bool simple_singleplayer_mode
+	bool simple_singleplayer_mode,
+	ReconnectSpec *rejoin
 );
 
 #endif

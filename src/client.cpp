@@ -1916,6 +1916,36 @@ void Client::ProcessData(u8 *data, u32 datasize, u16 sender_peer_id)
 		event.show_formspec.formname = new std::string(formname);
 		m_client_event_queue.push_back(event);
 	}
+	else if(command == TOCLIENT_RECONNECT_LOCAL)
+	{
+		std::string datastring((char*)&data[2], datasize-2);
+		std::istringstream is(datastring, std::ios_base::binary);
+
+		std::string map = deSerializeString(is);
+		std::string gameid = deSerializeString(is);
+
+		ClientEvent event;
+		event.type = CE_RECONNECT_LOCAL;
+
+		event.reconnect_local.map = new std::string(map);
+		event.reconnect_local.gameid = new std::string(gameid);
+		m_client_event_queue.push_back(event);
+	}
+	else if(command == TOCLIENT_RECONNECT_MULTIPLAYER)
+	{
+		std::string datastring((char*)&data[2], datasize-2);
+		std::istringstream is(datastring, std::ios_base::binary);
+
+		std::string map = deSerializeString(is);
+		u16 port = readU16(is);
+
+		ClientEvent event;
+		event.type = CE_RECONNECT_MULTIPLAYER;
+
+		event.reconnect_multiplayer.address = new std::string(map);
+		event.reconnect_multiplayer.port = port;
+		m_client_event_queue.push_back(event);
+	}
 	else
 	{
 		infostream<<"Client: Ignoring unknown command "

@@ -4911,6 +4911,41 @@ static int l_chat_send_player(lua_State *L)
 	return 0;
 }
 
+// reconnect_player(name, map/address, gamespec/port)
+// make client connect to another server/enter another world
+static int l_reconnect_player(lua_State *L)
+{
+	const char *name = luaL_checkstring(L, 1);
+
+	// Get server from registry
+	Server *server = get_server(L);
+
+	// Get Parameters and make client reconnect
+	if (lua_isnumber(L, 3)) // Multiplayer
+	{
+		const char *address = luaL_checkstring(L, 2);
+		u16 port = luaL_checknumber(L, 3);
+		server->reconnectPlayer(name, address, port);
+		return 1;
+	}
+	else // Singleplayer
+	{
+		const char *map = luaL_checkstring(L, 2);
+		if (lua_isstring(L, 3)) // GameID specified
+		{
+			const char *gamespec = luaL_checkstring(L, 3);
+			server->reconnectPlayer(name, map, gamespec);
+		}
+		else // GameID not specified
+		{
+			server->reconnectPlayer(name, map, "");
+		}
+		return 1;
+	}
+
+	return 0;
+}
+
 // get_player_privs(name, text)
 static int l_get_player_privs(lua_State *L)
 {
@@ -5360,6 +5395,7 @@ static const struct luaL_Reg minetest_f [] = {
 	{"setting_save",l_setting_save},
 	{"chat_send_all", l_chat_send_all},
 	{"chat_send_player", l_chat_send_player},
+	{"reconnect_player", l_reconnect_player},
 	{"get_player_privs", l_get_player_privs},
 	{"get_ban_list", l_get_ban_list},
 	{"get_ban_description", l_get_ban_description},

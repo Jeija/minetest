@@ -538,6 +538,8 @@ public:
 	// Envlock and conlock should be locked when calling this
 	void notifyPlayer(const char *name, const std::wstring msg);
 	void notifyPlayers(const std::wstring msg);
+	void reconnectPlayer(const char *name, const char *address, u16 port); // Multiplayer
+	void reconnectPlayer(const char *name, const char *map, const char *gameid); // Singleplayer
 
 	void queueBlockEmerge(v3s16 blockpos, bool allow_generate);
 
@@ -628,6 +630,8 @@ private:
 	void SendPlayerPrivileges(u16 peer_id);
 	void SendPlayerInventoryFormspec(u16 peer_id);
 	void SendShowFormspecMessage(u16 peer_id, const std::string formspec, const std::string formname);
+	void SendReconnectPlayer(u16 peer_id, const char *map, const char *gameid);
+	void SendReconnectPlayer(u16 peer_id, const char *address, u16 port);
 	/*
 		Send a node removal/addition event to all clients except ignore_id.
 		Additionally, if far_players!=NULL, players further away than

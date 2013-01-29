@@ -1680,26 +1680,66 @@ int main(int argc, char *argv[])
 			if(device->run() == false || kill == true)
 				break;
 
+			std::string map_dir = worldspec.path;
+
+			ReconnectSpec reconnect;
+			reconnect.enable = false;
+
+			reconnect.map = "";
+			reconnect.gameid = "";
+
+			reconnect.address = "";
+			reconnect.port = 0;
+
+
 			/*
 				Run game
 			*/
-			the_game(
-				kill,
-				random_input,
-				input,
-				device,
-				font,
-				worldspec.path,
-				current_playername,
-				current_password,
-				current_address,
-				current_port,
-				error_message,
-				configpath,
-				chat_backend,
-				gamespec,
-				simple_singleplayer_mode
-			);
+			do
+			{
+				if (reconnect.enable)
+				{
+					map_dir = porting::path_user + DIR_DELIM
+							+ "worlds" + DIR_DELIM + reconnect.map;
+					current_address = reconnect.address;
+					if (reconnect.port != 0)
+							current_port = reconnect.port;
+					gamespec = findSubgame(reconnect.gameid);
+					if(!gamespec.isValid())
+					{
+						gamespec = findWorldSubgame(map_dir);
+						if (!gamespec.isValid())
+						{
+							error_message = wgettext("Could not find or load game \"")
+									+ narrow_to_wide(map_dir) + L"\"";
+							errorstream<<wide_to_narrow(error_message)<<std::endl;
+							continue;
+						}
+					}
+					smgr->clear();
+					reconnect.enable = false;
+				}
+
+				the_game(
+					kill,
+					random_input,
+					input,
+					device,
+					font,
+					map_dir,
+					current_playername,
+					current_password,
+					current_address,
+					current_port,
+					error_message,
+					configpath,
+					chat_backend,
+					gamespec,
+					simple_singleplayer_mode,
+					&reconnect
+				);
+			}
+			while (reconnect.enable && not kill);
 
 		} //try
 		catch(con::PeerNotFoundException &e)

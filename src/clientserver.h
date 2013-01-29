@@ -364,6 +364,23 @@ enum ToClientCommand
 		u16 len
 		u8[len] formname
 	*/
+
+	TOCLIENT_RECONNECT_LOCAL = 0x45,
+	/*
+		[0] u16 command
+		u32 len
+		u8[len] map
+		u32 len
+		u8[len] gameid
+	*/
+
+	TOCLIENT_RECONNECT_MULTIPLAYER = 0x46,
+	/*
+		[0] u16 command
+		u32 len
+		u8[len] address
+		int port
+	*/
 };
 
 enum ToServerCommand
