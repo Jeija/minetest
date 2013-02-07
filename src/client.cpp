@@ -236,6 +236,7 @@ void * MediaFetchThread::Thread()
 			i != m_file_requests.end(); i++) {
 		curl = curl_easy_init();
 		assert(curl);
+		curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 		curl_easy_setopt(curl, CURLOPT_URL, (m_remote_url + i->name).c_str());
 		curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
 		std::ostringstream stream;
@@ -1898,6 +1899,22 @@ void Client::ProcessData(u8 *data, u32 datasize, u16 sender_peer_id)
 			m_detached_inventories[name] = inv;
 		}
 		inv->deSerialize(is);
+	}
+	else if(command == TOCLIENT_SHOW_FORMSPEC)
+	{
+		std::string datastring((char*)&data[2], datasize-2);
+		std::istringstream is(datastring, std::ios_base::binary);
+
+		std::string formspec = deSerializeLongString(is);
+		std::string formname = deSerializeString(is);
+
+		ClientEvent event;
+		event.type = CE_SHOW_FORMSPEC;
+		// pointer is required as event is a struct only!
+		// adding a std:string to a struct isn't possible
+		event.show_formspec.formspec = new std::string(formspec);
+		event.show_formspec.formname = new std::string(formname);
+		m_client_event_queue.push_back(event);
 	}
 	else
 	{
