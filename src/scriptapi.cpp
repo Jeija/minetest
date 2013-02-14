@@ -291,6 +291,39 @@ static void push_hit_params(lua_State *L,
 	set_hit_params(L, -1, params);
 }
 
+#if USE_CURL
+// curl_fetch(url, timeout) -> curlhandle
+static int l_curl_fetch(lua_State *L)
+{
+	std::string url = luaL_checkstring(L, 1);
+	float timeout = luaL_checknumber(L, 2);
+	Server *server = get_server(L);
+	actionstream<<"WARNING: A mod accesses URL '"<<url<<"'. Remove it if you don't trust that site."<<std::endl;
+	u32 handle = server->curlFetch(url, timeout);
+	lua_pushnumber(L, handle);
+	return 1;
+}
+
+// get_curl_fetch_result(curlhandle) -> data, curlcode
+static int l_get_curl_fetch_result(lua_State *L)
+{
+	u32 handle = luaL_checknumber(L, 1);
+	Server *server = get_server(L);
+	CurlFetchResult *result = server->getCurlFinished(handle);
+	if (result == NULL)
+	{
+		lua_pushnil(L);
+		lua_pushnil(L);
+	}
+	else
+	{
+		lua_pushstring(L, result->data.c_str());
+		lua_pushnumber(L, result->curlcode);
+	}
+	return 2;
+}
+#endif
+
 /*
 	ServerSoundParams
 */
@@ -1135,6 +1168,8 @@ static const struct luaL_Reg minetest_f [] = {
 	{"add_particle", l_add_particle},
 	{"add_particlespawner", l_add_particlespawner},
 	{"delete_particlespawner", l_delete_particlespawner},
+	{"curl_fetch", l_curl_fetch},
+	{"get_curl_fetch_result", l_get_curl_fetch_result},
 	{NULL, NULL}
 };
 

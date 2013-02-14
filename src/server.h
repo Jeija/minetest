@@ -39,8 +39,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "rollback_interface.h" // Needed for rollbackRevertActions()
 #include <list> // Needed for rollbackRevertActions()
 #include <algorithm>
-
 #define PP(x) "("<<(x).X<<","<<(x).Y<<","<<(x).Z<<")"
+#include "config.h"
 
 struct LuaState;
 typedef struct lua_State lua_State;
@@ -142,6 +142,33 @@ public:
 	void * Thread();
 };
 
+#if USE_CURL
+class CurlFetchThread : public SimpleThread
+{
+public:
+
+	CurlFetchThread(std::string url, float timeout):
+		m_url(url),
+		m_timeout(timeout)
+	{
+	}
+
+	void * Thread();
+
+	std::string getData()
+		{return m_result; }
+	int getCurlCode()
+		{ return m_cc; }
+
+private:
+	std::string m_url;
+	float m_timeout;
+
+	std::string m_result;
+	int m_cc;
+};
+#endif
+
 struct PlayerInfo
 {
 	u16 id;
@@ -230,6 +257,14 @@ struct ServerPlayingSound
 	ServerSoundParams params;
 	std::set<u16> clients; // peer ids
 };
+
+#if USE_CURL
+struct CurlFetchResult
+{
+	std::string data;
+	int curlcode;
+};
+#endif
 
 class RemoteClient
 {
@@ -501,6 +536,13 @@ public:
 	EmergeManager *getEmergeManager(){ return m_emerge; }
 
 	BiomeDefManager *getBiomeDef(){ return m_biomedef; }
+
+	#if USE_CURL
+	// Implementation of curl for lua
+	// Return value is an ID that can be used for getCurlFinished
+	int curlFetch(std::string url, float timeout);
+	CurlFetchResult *getCurlFinished(u32 id);
+	#endif
 
 	// actions: time-reversed list
 	// Return value: success/failure
@@ -859,6 +901,13 @@ private:
 		Particles
 	*/
 	std::vector<u32> m_particlespawner_ids;
+	#if USE_CURL
+	/*
+		Curl Download Thread
+	*/
+	std::map<u32, CurlFetchThread*> m_curlthreads;
+	u32 m_curlthread_id;
+	#endif
 };
 
 /*

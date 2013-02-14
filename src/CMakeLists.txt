@@ -428,6 +428,19 @@ if(BUILD_SERVER)
 	endif(USE_CURL)
 endif(BUILD_SERVER)
 
+if(USE_CURL)
+	target_link_libraries(
+		${PROJECT_NAME}
+		${CURL_LIBRARY}
+	)
+	target_link_libraries(
+		${PROJECT_NAME}server
+		${CURL_LIBRARY}
+	)
+	include_directories(
+		${CURL_INCLUDE_DIR}
+	)
+endif(USE_CURL)
 
 #
 # Set some optimizations and tweaks
